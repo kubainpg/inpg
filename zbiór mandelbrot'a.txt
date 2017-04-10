@@ -1,0 +1,333 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows.Media.Imaging;
+ 
+namespace BresenhamLine
+{
+class WriteableBitmapDrawer
+{
+WriteableBitmap writeableBitmap;
+IntPtr backBuffer;
+public WriteableBitmapDrawer(WriteableBitmap writeableBitmap)
+{
+this.writeableBitmap = writeableBitmap;
+backBuffer = writeableBitmap.BackBuffer;
+}
+ 
+public unsafe void SetPixel(int x, int y, int color)
+{
+byte* p = (byte*)backBuffer + y * writeableBitmap.BackBufferStride+ x*4;               
+*((int*)p) = color;
+}
+ 
+//http://pl.wikipedia.org/wiki/Algorytm_Bresenhama
+unsafe public void FirstBresenham(int x1, int y1, int x2, int y2, int color)
+{
+int d, dx, dy, ai, bi, xi, yi;        
+int x = x1, y = y1;
+// determining the direction of drawing
+if (x1 < x2)
+{
+xi = 1;            
+dx = x2 - x1;
+}
+else
+{
+xi = -1;            
+dx = x1 - x2;
+}
+// determining the direction of drawing
+if (y1 < y2)
+{
+yi = 1;            
+dy = y2 - y1;
+}
+else
+{
+yi = -1;            
+dy = y1 - y2;
+}
+// first pixel
+SetPixel(x, y, color);
+ 
+// the leading axis OX
+if (dx > dy)
+{
+ai = (dy - dx) * 2;
+bi = dy * 2;
+d = bi - dx;
+// loop for x
+while (x != x2)
+{
+// factor test
+if (d >= 0)
+{
+x += xi;                    
+y += yi;                    
+d += ai;
+}
+else
+{
+d += bi;
+x += xi;                    
+}
+SetPixel(x, y, color);
+}
+}
+// the leading axis OY
+else
+{
+ai = ( dx - dy ) * 2;
+bi = dx * 2;
+d = bi - dy;
+// loop for y
+while (y != y2)
+{
+// factor test
+if (d >= 0)
+{
+x += xi;                    
+y += yi;                    
+d += ai;
+}
+else
+{
+d += bi;
+y += yi;                    
+}
+SetPixel(x, y, color);
+}
+}
+}
+ 
+//poprzednia wersja po optymalizacji
+unsafe public void Bresenham(int x1, int y1, int x2, int y2, int color)
+{
+int d, dx, dy, ai, bi, xi, yi;
+int pxi, pyi;
+int x = x1, y = y1;
+// determining the direction of drawing
+if (x1 < x2)
+{
+xi = 1;
+pxi = 4;
+dx = x2 - x1;
+}
+else
+{
+xi = -1;
+pxi = -4;
+dx = x1 - x2;
+}
+// determining the direction of drawing
+if (y1 < y2)
+{
+yi = 1;
+pyi = writeableBitmap.BackBufferStride;
+dy = y2 - y1;
+#include <vcl.h>
+#pragma hdrstop
+#include "Mandelbrot.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+: TForm(Owner)
+{
+}
+ 
+#define MIN(a,b) ((a<b)?a:b)
+#define MAX(a,b) ((a>b)?a:b)
+ 
+//---------------------------------------------------------------------------
+//Describes places to render
+double ratioX, ratioY;
+double minX, minY, maxX, maxY;
+int downX, downY;
+//colors
+TColor colors[121];
+//---------------------------------------------------------------------------
+ 
+//for HSV colors
+void HSV2RGB(float hue, float sat, float val, float &red, float &grn, float &blu)
+{
+int i;
+float f, p, q, t;
+if(val==0) {red=0; grn=0; blu=0;}
+else{
+hue/=60;
+i = (int)(hue);
+f = hue-i;
+p = val*(1-sat);
+q = val*(1-(sat*f));
+t = val*(1-(sat*(1-f)));
+if (i==0) {red=val; grn=t; blu=p;}
+else if (i==1) {red=q; grn=val; blu=p;}
+else if (i==2) {red=p; grn=val; blu=t;}
+else if (i==3) {red=p; grn=q; blu=val;}
+else if (i==4) {red=t; grn=p; blu=val;}
+else if (i==5) {red=val; grn=p; blu=q;}
+}
+}
+ 
+//initialize array with colors used to color different levels
+void initializeColors()
+{
+int level;
+float r, g, b;
+ 
+for (level=0; level<120; level++)
+{
+HSV2RGB(2.1*level, 0.85, 0.6, r, g, b);
+colors[level] = (TColor)(int)(r*255) + ((int)(g*255) << 8) + ((int)(b*255) << 16);
+}
+colors[120] = (TColor)0;
+}
+ 
+//type for complex numbers
+typedef struct complex_type
+{
+double real;
+double imaginary;
+} complex_t;
+ 
+//calculate squared modus of given complex c
+double complexModSq(complex_t c)
+{
+return c.real*c.real + c.imaginary*c.imaginary;
+}
+ 
+//function z[0]=0
+complex_t f(complex_t p)
+{
+p.real = 0;
+p.imaginary = 0;
+return p;
+}
+ 
+//function z[n+1] = z[n]^2 + p
+complex_t g(complex_t z, complex_t p)
+{
+complex_t result;
+result.real = z.real*z.real - z.imaginary*z.imaginary + p.real;
+result.imaginary = 2*z.real*z.imaginary + p.imaginary;
+return result;
+}
+ 
+//value is inside set in the returned level
+int levelSet(complex_t p)
+{
+complex_t z;
+int iteration;
+ 
+iteration = 0;
+z = f(p);
+ 
+do
+{
+z = g(z, p);
+iteration++;
+} while (complexModSq(z) < 4 && iteration < 120);
+ 
+return iteration;
+}
+ 
+//generate fractal
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+int i, j, level;
+complex_t p;
+ 
+minX = StrToFloat(minx->Text);
+minY = StrToFloat(miny->Text);
+maxX = StrToFloat(maxx->Text);
+maxY = StrToFloat(maxy->Text);
+ 
+ratioX = (maxX - minX) / Fractal->Width;
+ratioY = (maxY - minY) / Fractal->Height;
+ 
+for (i=0; i<Fractal->Height; i++)
+{
+p.imaginary = i*ratioY + minY;
+for (j=0; j<Fractal->Width; j++)
+{
+p.real = j*ratioX + minX;
+level = levelSet(p);
+Fractal->Canvas->Pixels[j][i] = colors[level];
+}
+}
+Fractal->Refresh();
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FormCreate(TObject *Sender)
+{
+minx->Text = FloatToStr(-2.0);
+maxx->Text = FloatToStr(0.5);
+miny->Text = FloatToStr(-1.25);
+maxy->Text = FloatToStr(1.25);
+ 
+minX = StrToFloat(minx->Text);
+minY = StrToFloat(miny->Text);
+maxX = StrToFloat(maxx->Text);
+maxY = StrToFloat(maxy->Text);
+ 
+ratioX = (maxX - minX) / Fractal->Width;
+ratioY = (maxY - minY) / Fractal->Height;
+ 
+//initialize array with colors
+initializeColors();
+ 
+//render new fractal
+Button1Click(Sender);
+}
+ 
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FractalMouseDown(TObject *Sender,
+TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+downX = X;
+downY = Y;
+ 
+Selection->Width = 0;
+Selection->Height = 0;
+Selection->Visible = true;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FractalMouseUp(TObject *Sender,
+TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+//remove selection
+Selection->Visible = false;
+ 
+//get new range to render
+minx->Text = FloatToStr(MIN(downX, X)*ratioX + minX);
+maxx->Text = FloatToStr(MAX(downX, X)*ratioX + minX);
+miny->Text = FloatToStr(MIN(downY, Y)*ratioY + minY);
+maxy->Text = FloatToStr(MAX(downY, Y)*ratioY + minY);
+ 
+minX = StrToFloat(minx->Text);
+minY = StrToFloat(miny->Text);
+maxX = StrToFloat(maxx->Text);
+maxY = StrToFloat(maxy->Text);
+ 
+//render new fractal
+Button1Click(Sender);
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FractalMouseMove(TObject *Sender,
+TShiftState Shift, int X, int Y)
+{
+//if left mouse button is held then draw selection
+if (Shift.Contains(ssLeft))
+{
+Selection->Width = abs(downX - X);
+Selection->Height = abs(downY - Y);
+Selection->Left = Fractal->Left + MIN(downX, X);
+Selection->Top = Fractal->Top + MIN(downY, Y);
+}
+}
+//---------------------------------------------------------------------------
