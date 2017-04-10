@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+#include <string.h>
+ 
+//Wielomian dla CRC-32 zgodny ze standardem Ethernet, ZIP i RAR
+#define P 0x04c11db7
+ 
+ 
+unsigned long tablica[256];
+ 
+//Funkcja zamienia miejscami bity starsze z mlodszymi
+unsigned long Zamien_bity(unsigned long liczba, char l_bitow)
+{
+unsigned long wynik=0;
+for(int i = 1; i < (l_bitow + 1); i++)
+{
+if(liczba & 1)
+wynik |= 1 << (l_bitow - i);
+liczba >>= 1;
+}
+return wynik;
+}
+ 
+//Wypelnia tablice odpowiednimi wartosciami
+void Inicjuj_tablice(void){
+//Dla kazdego znaku ASCII
+for (int ASCII=0;ASCII<256;ASCII++)
+{
+tablica[ASCII]=Zamien_bity(ASCII, 8) << 24;
+for (int j = 0; j < 8; j++)
+{
+if ((tablica[ASCII] & (1 << 31))!=0)
+tablica[ASCII] = (tablica[ASCII] << 1) ^P; else
+tablica[ASCII] = (tablica[ASCII] << 1);
+}
+tablica[ASCII] = Zamien_bity(tablica[ASCII], 32);
+}
+return;
+}
+ 
+void Oblicz_CRC(char *txt){
+//Wartosc poczatkowa to (2^32)-1
+unsigned long  crc32=0xffffffff;
+ 
+int  wynik;
+char kod[20];
+ 
+//Liczba bajtow do przetworzenia
+int dlugosc;
+ 
+//Tekst, dla ktorego obliczymy crc32
+unsigned char* tekst;
+//------------------------------------------------------------
+ 
+//Przykladowy tekst
+tekst=(unsigned char*)txt;
+dlugosc = strlen(tekst);
+ 
+//Obliczaj crc przesuwajac kolejne znaki tekstu wejsciowego
+while(dlugosc--)
+crc32=(crc32>>8)^tablica[(crc32&255)^*tekst++];
+//Wykonaj operacje XOR z wartoscia poczatkowa
+wynik=crc32^0xffffffff;
+ 
+//Zamien wynik na hex
+itoa(wynik,kod,16);
+printf("Tekst wejsciowy: %s\n",txt);
+printf("Suma CRC32: %s\n",kod);
+printf("Dowolny klawisz...");
+ 
+ 
+return;
+}
+ 
+void main(void){
+//Funkcja tworzy tablice kodow dla wszystkich znakow ASCII
+Inicjuj_tablice();
+ 
+Oblicz_CRC("algorytmy i struktury danych");
+getch();
+return;
+}
+if i = 0   then V[i,j]:=V_bok[4] else
+if i = 100 then V[i,j]:=V_bok[3] else
+//if i = 100 then V[i,j]:=V[i-1,j] else //przy warunku Neumana
+if j = 0   then V[i,j]:=V_bok[1] else
+if j = 100 then V[i,j]:=V_bok[2] else
+if (i in [40..45]) and (j in [40..45]) then V[i,j]:=V_bok[6] //zaburzenie osrodka
+ 
+else  // z przedzialu
+V[i,j]:=(V[i-1,j]+V[i+1,j]+V[i,j-1]+V[i,j+1])/4;
+eps:=eps+abs(V[i,j]-Vs)
+end;
+// wyswietlenie wyniku
+for i:=0 to 100 do
+for j:=0 to 100 do imgRozklad.Canvas.Pixels[i,j]:=ktory_color(V[i,j]);
+ 
+Image1.Canvas.StretchDraw(Image1.Canvas.ClipRect,imgRozklad);
+Image1.Invalidate;
+Application.ProcessMessages;
+ 
+until ((eps/MaxV)<epsmax) or bWarunek;
+end;
+ 
+procedure TRozklad.btnPrzerwijClick(Sender: TObject);
+begin
+bWarunek := true;
+end;
+ 
+end.
