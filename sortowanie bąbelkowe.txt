@@ -1,0 +1,37 @@
+#include<iostream>
+#include<cstdlib>
+#include<cmath>
+using namespace std;
+ 
+int main()
+{
+    int n, pierw, pom;
+ 
+        cout<<"Podaj liczbê: ";
+        cin>>n;
+ 
+        pierw = sqrt(n);
+ 
+        cout<<"Czynniki pierwsze liczby "<<n<<": ";
+ 
+        int k=2; //ustawiamy k na pierwsz¹ liczbê pierwsz¹
+ 
+        //rozk³ad liczby na czynniki pierwsze
+        while(n>1&&k<=pierw)
+        {
+                while(n%k==0) //dopóki liczba jest podzielna przez k
+                {
+                        cout<<k<<" ";
+                        n/=k;
+                }
+                ++k;
+        }
+ 
+        if(n>1)
+               cout<<n;
+        cout<<endl;
+ 
+        system("pause");
+        return 0;
+}
+ 
