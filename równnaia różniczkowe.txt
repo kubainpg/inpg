@@ -1,0 +1,140 @@
+unit rozkladU;
+ 
+interface
+ 
+uses
+Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+StdCtrls, ExtCtrls, Math, ComCtrls;
+ 
+type
+TRozklad = class(TForm)
+Image1: TImage;
+btnPrzerwij: TButton;
+btnObliczenia: TButton;
+Bevel1: TBevel;
+Image2: TImage;
+lbMin: TLabel;
+lbMax: TLabel;
+ 
+procedure btnObliczeniaClick(Sender: TObject);
+procedure btnPrzerwijClick(Sender: TObject);
+ 
+private
+{ Private declarations }
+public
+{ Public declarations }
+end;
+ 
+var
+Rozklad: TRozklad;
+ 
+bWarunek : boolean;
+implementation
+{$r *.dfm}
+ 
+procedure TRozklad.btnObliczeniaClick(Sender: TObject);
+ 
+const
+Kolor : Array[1..32] of TColor =
+($0000ff, $0040ff, $0060ff, $0080ff,
+$00a0ff, $00c0ff, $00e0ff, $00ffff,
+$04fbed, $0cf3d7, $12e9b9, $1fe0a6,
+$26d98d, $2cd362, $35ca57, $46bf45,
+$73c03f, $87c63c, $9aca35, $aecd32,
+$c7cb35, $d3d32c, $e5d91c, $e4d01b,
+$e6c71a, $e6b71a, $e6ad1a, $e69e1a,
+$e68e1a, $e67a1a, $e6671a, $e64a1b);
+ 
+var
+i,j : integer;
+eps,epsmax,Vs : double;
+V: array [0..100,0..100] of double; // potencjal
+V_bok : array [1..6] of double; //potencjaly boków  (temperatury)
+minV,maxV : double;
+imgRozklad:TBitmap;
+ 
+function ktory_color(v:real):TColor;
+var
+i,il_barw : integer;
+zakres,d_color : double;
+begin
+zakres := abs(maxV-minV);
+il_barw := 32;
+d_color := zakres / (il_barw-1);
+i := Trunc((V-minV)/(d_color));
+ktory_color := Kolor[32 - i];
+end;
+ 
+begin
+ 
+ 
+imgRozklad:=TBitmap.create;
+imgRozklad.Height:=101;
+imgRozklad.Width:=101;
+ 
+// war poczatkowe
+V_bok[1]:=100;   //V gora
+V_bok[2]:=0;    //V dol   tu nalezy zmienic wartosci temperatury
+V_bok[3]:=0;  //V prawa
+V_bok[4]:=0;  //V lewa
+ 
+V_bok[5]:=0;   //wartosci poczatkowe - warunek poczatkowy
+ 
+V_bok[6]:=-30;  //Wartosc Losowa - wartosc zaburzenia
+// szukanie min i max
+minV := v_bok[1];
+maxV := v_bok[1];
+for i:=1 to 6 do
+begin
+if V_bok[i] < minV then minv := v_bok[i];
+if V_bok[i] > maxV then MaxV := v_bok[i];
+end;
+lbMin.Caption := FloatToStr(minV);
+lbMax.Caption := FloatToStr(maxV);
+//Skala rysowanie
+for i:=1 to Image2.Height do begin
+Image2.Canvas.Pen.Color := ktory_color(i*(maxV-minV)/Image2.Height+minV);
+Image2.Canvas.Moveto(0, Image2.Height-i);
+Image2.Canvas.LineTo(Image2.Width, Image2.Height-i);
+end;
+ 
+// inicjalizacja wartosci poczatkowych ()
+for i:=0 to 100 do
+for j:=0 to 100 do v[i,j]:=v_bok[5];
+ 
+bWarunek := false; //war zakonczenia
+ 
+epsmax := 0.1;
+ 
+repeat
+// obliczenia numeryczne (metoda Gaussa-Seidla)
+for i:=0 to 100 do
+for j:=0 to 100 do begin
+if i = 0   then V[i,j]:=V_bok[4] else
+if i = 100 then V[i,j]:=V_bok[3] else
+//if i = 100 then V[i,j]:=V[i-1,j] else //przy warunku Neumana
+if j = 0   then V[i,j]:=V_bok[1] else
+if j = 100 then V[i,j]:=V_bok[2] else
+if (i in [40..45]) and (j in [40..45]) then V[i,j]:=V_bok[6] //zaburzenie osrodka
+ 
+else  // z przedzialu
+V[i,j]:=(V[i-1,j]+V[i+1,j]+V[i,j-1]+V[i,j+1])/4;
+eps:=eps+abs(V[i,j]-Vs)
+end;
+// wyswietlenie wyniku
+for i:=0 to 100 do
+for j:=0 to 100 do imgRozklad.Canvas.Pixels[i,j]:=ktory_color(V[i,j]);
+ 
+Image1.Canvas.StretchDraw(Image1.Canvas.ClipRect,imgRozklad);
+Image1.Invalidate;
+Application.ProcessMessages;
+ 
+until ((eps/MaxV)<epsmax) or bWarunek;
+end;
+ 
+procedure TRozklad.btnPrzerwijClick(Sender: TObject);
+begin
+bWarunek := true;
+end;
+ 
+end.
