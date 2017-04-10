@@ -1,0 +1,62 @@
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+float Pole(float a)
+{
+  return a*a;
+}
+ 
+double Pole(double r)
+{
+  return 3.14*r*r;
+}
+float Pole(float a,float b)
+{
+  return a*b;
+}
+ 
+int main()
+{
+  float a,b;
+  double r;
+  char opcja;
+ 
+  cout<<"Wybierz opcjê: "<<endl;
+ 
+  cout<<"1 - pole kwadratu "<<endl;
+  cout<<"2 - pole prostok¹ta "<<endl;
+  cout<<"3 - pole ko³a "<<endl;
+ 
+  cin>>opcja;
+ 
+  switch(opcja)
+  {
+  case '1':
+ 
+    cout<<"Podaj d³ugoœæ boku: "; cin>>a;
+    cout<<"Pole kwadratu wynosi "<<Pole(a)<<endl;
+ 
+    break;
+  case '2':
+ 
+    cout<<"Podaj d³ugoœæ boku a: "; cin>>a;
+    cout<<"Podaj d³ugoœæ boku b: "; cin>>b;
+    cout<<"Pole prostok¹ta wynosi "<<Pole(a,b)<<endl;
+ 
+    break;
+  case '3':
+ 
+    cout<<"Podaj d³ugoœæ promienia: "; cin>>r;
+    cout<<"Pole ko³a wynosi "<<Pole(r)<<endl;
+ 
+    break;
+ 
+  default: cout<<"Wybra³eœ nieprawid³ow¹ opcjê!"<<endl;
+  }
+ 
+  system("pause");
+  return 0;
+}
