@@ -1,0 +1,167 @@
+#include <vcl.h>
+#pragma hdrstop
+ 
+#include "Cohen_Sutherland.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Label6Click(TObject *Sender)
+{
+ShellExecute(Application->Handle,
+"open",
+"http://www.algorytm.org",
+NULL,
+NULL,
+SW_NORMAL);
+}
+ 
+#define LEFT 80
+#define RIGHT 420
+#define TOP 80
+#define BOTTOM 320
+ 
+unsigned char calcRegCode(int x, int y)
+{
+unsigned char result = 0;
+if (x < LEFT)   result |= 0x1;
+if (x > RIGHT)  result |= 0x2;
+if (y > BOTTOM) result |= 0x4;
+if (y < TOP)    result |= 0x8;
+ 
+return result;
+}
+ 
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Cohen_Sutherland(int x1, int y1, int x2, int y2)
+{
+unsigned char rcode1, rcode2, rcode;
+int x, y;
+ 
+/* Algorytm Cohena-Sutherlanda */
+/* 1. Zakoduj koñce odcinka zgodnie z kodami obszarów */
+rcode1 = calcRegCode(x1, y1);
+rcode2 = calcRegCode(x2, y2);
+/* 2. Je¿eli iloczyn logiczny (AND) tych kodów <>0,
+to odcinek mo¿e byæ pominiêty (w ca³oœci poza
+oknem) - zaznacz go na czerwono */
+if (rcode1 & rcode2)
+{
+Image1->Canvas->Pen->Color = clRed;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+/* 3. Je¿eli suma logiczna (OR)tych kodów = 0,
+to odcinek w ca³oœci mieœci siê w okienku
+- zaznacz go na zielono */
+else if ((rcode1 | rcode2) == 0)
+{
+Image1->Canvas->Pen->Color = clGreen;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+else
+{
+/* pozostale przypadki - przeciecie z krawedzia okna */
+do
+{
+if (rcode1 != 0)
+{
+rcode = rcode1;
+}
+else
+{
+rcode = rcode2;
+}
+ 
+/* pozostale przypadki - przeciecie z krawedzia okna */
+if (rcode & 0x1)
+{
+y = y1+(y2-y1)*(LEFT-x1)/(x2-x1);
+x = LEFT;
+}
+else if (rcode & 0x2)
+{
+y = y1+(y2-y1)*(RIGHT-x1)/(x2-x1);
+x = RIGHT;
+}
+else if (rcode & 0x4)
+{
+x = x1+(x2-x1)*(BOTTOM-y1)/(y2-y1);
+y = BOTTOM;
+}
+else if (rcode & 0x8)
+{
+x = x1+(x2-x1)*(TOP-y1)/(y2-y1);
+y = TOP;
+}
+ 
+if (rcode == rcode1)
+{
+Image1->Canvas->Pen->Color = clYellow;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x, y);
+x1 = x;
+y1 = y;
+rcode1 = calcRegCode(x1, y1);
+}
+else
+{
+Image1->Canvas->Pen->Color = clYellow;
+Image1->Canvas->MoveTo(x2, y2);
+Image1->Canvas->LineTo(x, y);
+x2 = x;
+y2 = y;
+rcode2 = calcRegCode(x2, y2);
+}
+} while ((rcode1 & rcode2) == 0 && (rcode1 | rcode2) != 0);
+ 
+if ((rcode1 | rcode2) == 0)
+{
+Image1->Canvas->Pen->Color = clBlue;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+else
+{
+Image1->Canvas->Pen->Color = clYellow;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+}
+}
+ 
+ 
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+int i, x1, y1, x2, y2;
+ 
+/* wyczysc wszystko */
+Image1->Canvas->Pen->Color = clBlack;
+Image1->Canvas->Pen->Width = 2;
+Image1->Canvas->Brush->Color = clWhite;
+Image1->Canvas->Rectangle(0, 0, Image1->Width, Image1->Height);
+ 
+/* narysuj okno */
+Image1->Canvas->Brush->Color = clLtGray;
+Image1->Canvas->Rectangle(LEFT, TOP, RIGHT, BOTTOM);
+ 
+/* losuj odciniki */
+randomize();
+for (i=0; i<20; i++)
+{
+x1 = random(Image1->Width);
+y1 = random(Image1->Height);
+x2 = x1 + random(200) - 100;
+y2 = y1 + random(200) - 100;
+ 
+Cohen_Sutherland(x1, y1, x2, y2);
+}
+}
+//--
