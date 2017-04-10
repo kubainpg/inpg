@@ -1,0 +1,109 @@
+#include<iostream>
+#include<cstring>
+using namespace std;
+ 
+bool czy_spolgloska(char litera)
+{
+  //sprawdzamy czy samog³oska - jest ich mniej
+  switch(litera)
+  {
+    case 'a':
+    case 'e':
+    case 'i':
+    case 'o':
+    case 'u':
+    case 'y':
+      return 0;  
+  }
+  return 1;
+}
+ 
+void kodowanie(char *napis)
+{
+  int dl = strlen(napis); //wyznaczenie liczby znaków
+ 
+  //nale¿y zapamiêtaæ pozycjê pierwszej spó³g³oski
+  bool f=1;  //czy dana spó³g³oska jest pierwsza
+  int nr;   //pozycja pierwszej spó³g³oski
+  char first;  //przechowujemy spó³g³oskê do podmiany
+ 
+  for(int i=0;i<dl;i++)
+    {
+      if(czy_spolgloska(napis[i]))
+      {
+        if(f)  //jesli wczytana spó³g³oska jest pierwsza
+        {    //to j¹ spamiêtujemy
+          nr = i;
+          first = napis[i];
+          f = 0;
+        }
+        else //podmiana
+        {
+          char pom = napis[i];
+          napis[i] = first;
+          first = pom;
+        }  
+      }
+ 
+    }
+    if(!f)
+      napis[nr] = first;
+}
+ 
+void dekodowanie(char *napis)
+{
+  int dl = strlen(napis); //wyznaczenie liczby znaków
+ 
+  //nale¿y zapamiêtaæ pozycjê pierwszej spó³g³oski
+  bool f=1;  //czy dana spó³g³oska jest pierwsza
+  int nr;   //pozycja pierwszej spó³g³oski
+  char first;  //przechowujemy spó³g³oskê do podmiany
+ 
+  for(int i=dl-1;i>=0;i--)
+    {
+      if(czy_spolgloska(napis[i]))
+      {
+        if(f)  //jesli wczytana spó³g³oska jest ostatnia
+        {    //to j¹ spamiêtujemy
+          nr = i;
+          first = napis[i];
+          f = 0;
+        }
+        else //podmiana
+        {
+          char pom = napis[i];
+          napis[i] = first;
+          first = pom;
+        }  
+      }
+ 
+    }
+    if(!f)
+      napis[nr] = first;
+}
+ 
+int main()
+{
+  char napis[100];
+ 
+  cout<<"Podaj napis do zaszyfrowania: ";
+  cin>>napis;
+ 
+  cout<<"Przed szyfrowaniem: ";
+  cout<<napis<<endl;
+ 
+  //szyfrujemy
+  kodowanie(napis);
+ 
+  cout<<"Szyfrogram: ";
+  cout<<napis<<endl;
+ 
+  //deszyfrujemy
+  dekodowanie(napis);
+ 
+  cout<<"Tekst jawny: ";
+  cout<<napis<<endl;
+ 
+  cin.get();
+  return 0;
+}
