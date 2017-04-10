@@ -1,7 +1,7 @@
-#include<iostream>
+tralala
 #include<cstring>
-using namespace std;
- 
+dsfagdsfg 
+
 bool czy_spolgloska(char litera)
 {
   //sprawdzamy czy samog³oska - jest ich mniej
