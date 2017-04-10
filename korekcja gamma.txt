@@ -1,0 +1,115 @@
+#include <vcl.h>
+#include <math.h>
+#pragma hdrstop
+#include "Unit1.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+ 
+double LUT[256];
+ 
+//---------------------------------------------------------------------------
+//wyswietl wartosci tablicy LUT
+void TForm1::UpdateLUT()
+{
+Chart3->SeriesList->Series[0]->Clear();
+Chart3->SeriesList->Series[0]->AddArray(LUT, 255);
+}
+ 
+//---------------------------------------------------------------------------
+//zmieñ wartosc gamma i przelicz nowe wartosci tablicy LUT
+void __fastcall TForm1::UpDown1Click(TObject *Sender, TUDBtnType Button)
+{
+int i;
+double gamma;
+gamma = StrToFloat(Edit1->Text);
+if (Button == btNext)
+gamma += 0.05;
+else
+gamma -= 0.05;
+ 
+if (gamma < 0.1)
+gamma = 0.1;
+ 
+Edit1->Text = FloatToStr(gamma);
+for (i=0; i<256; i++)
+if ((255 * powl(i/255.0, 1/gamma)) > 255)
+LUT[i] = 255;
+else
+LUT[i] = 255 * powl(i/255.0, 1/gamma);
+UpdateLUT();
+}
+ 
+//---------------------------------------------------------------------------
+//zainicjuj tablice LUT
+void __fastcall TForm1::FormCreate(TObject *Sender)
+{
+int i;
+for (i=0; i<256; i++)
+LUT[i] = i;
+UpdateLUT();
+}
+ 
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+int i, j, rvalue, gvalue, bvalue, grayvalue;
+double r[256], g[256], b[256], gray[256];
+TColor color;
+ 
+for (i=0; i<256; i++)
+{
+r[i] = 0;
+g[i] = 0;
+b[i] = 0;
+gray[i] = 0;
+}
+ 
+for (i=0; i<ObrazKolorowy->Width; i++)
+for (j=0; j<ObrazKolorowy->Height; j++)
+{
+color = ObrazKolorowy->Canvas->Pixels[i][j];
+rvalue = GetRValue(color);
+gvalue = GetGValue(color);
+bvalue = GetBValue(color);
+//zmien wartosc wedlug tablicy LUT
+color = (TColor)(LUT[rvalue] +
+((int)LUT[gvalue] << 8) +
+((int)LUT[bvalue] << 16));
+//oblicz histogram
+WynikKolorowy->Canvas->Pixels[i][j] = color;
+r[GetRValue(color)]++;
+g[GetGValue(color)]++;
+b[GetBValue(color)]++;
+}
+Histogram1->SeriesList->Series[0]->Clear();
+Histogram1->SeriesList->Series[1]->Clear();
+Histogram1->SeriesList->Series[2]->Clear();
+Histogram1->SeriesList->Series[0]->AddArray(r, 255);
+Histogram1->SeriesList->Series[1]->AddArray(g, 255);
+Histogram1->SeriesList->Series[2]->AddArray(b, 255);
+ 
+for (i=0; i<ObrazMono->Width; i++)
+for (j=0; j<ObrazMono->Height; j++)
+{
+color = ObrazMono->Canvas->Pixels[i][j];
+grayvalue = GetRValue(color);
+//zmien wartosc wedlug tablicy LUT
+color = (TColor) LUT[grayvalue] +
+((int)LUT[grayvalue] << 8) +
+((int)LUT[grayvalue] << 16);
+//oblicz histogram
+WynikMono->Canvas->Pixels[i][j] = color;
+gray[GetRValue(color)]++;
+}
+Histogram2->SeriesList->Series[0]->Clear();
+Histogram2->SeriesList->Series[0]->AddArray(gray, 255);
+}
+//---------------------------------------------------------------------------
