@@ -1,0 +1,332 @@
+#include <vcl.h>
+#pragma hdrstop
+ 
+#include "Cohen_Sutherland.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Label6Click(TObject *Sender)
+{
+ShellExecute(Application->Handle,
+"open",
+"http://www.algorytm.org",
+NULL,
+NULL,
+SW_NORMAL);
+}
+ 
+#define LEFT 80
+#define RIGHT 420
+#define TOP 80
+#define BOTTOM 320
+ 
+unsigned char calcRegCode(int x, int y)
+{
+unsigned char result = 0;
+if (x < LEFT)   result |= 0x1;
+if (x > RIGHT)  result |= 0x2;
+if (y > BOTTOM) result |= 0x4;
+if (y < TOP)    result |= 0x8;
+ 
+return result;
+}
+ 
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Cohen_Sutherland(int x1, int y1, int x2, int y2)
+{
+unsigned char rcode1, rcode2, rcode;
+int x, y;
+ 
+/* Algorytm Cohena-Sutherlanda */
+/* 1. Zakoduj koñce odcinka zgodnie z kodami obszarów */
+rcode1 = calcRegCode(x1, y1);
+rcode2 = calcRegCode(x2, y2);
+/* 2. Je¿eli iloczyn logiczny (AND) tych kodów <>0,
+to odcinek mo¿e byæ pominiêty (w ca³oœci poza
+oknem) - zaznacz go na czerwono */
+if (rcode1 & rcode2)
+{
+Image1->Canvas->Pen->Color = clRed;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+/* 3. Je¿eli suma logiczna (OR)tych kodów = 0,
+to odcinek w ca³oœci mieœci siê w okienku
+- zaznacz go na zielono */
+else if ((rcode1 | rcode2) == 0)
+{
+Image1->Canvas->Pen->Color = clGreen;
+Image1->Canvas->MoveTo(x1, y1);
+Image1->Canvas->LineTo(x2, y2);
+}
+else
+{
+/* pozostale przypadki - przeciecie z krawedzia okna */
+do
+{
+if (rcode1 != 0)
+{
+rcode = rcode1;
+}
+else
+{
+rcode = rcode2;
+}
+ 
+/* pozostale przypadki - przeciecie z krawedzia okna */
+if (rcode & 0x1)
+{
+y = y1+(y2-y1)*(LEFT-x1)/(x2-x1);
+x = LEFT;
+}
+else if (rcode & 0x2)
+{
+y = y1+(y2-y1)*(RIGHT-x1)/(x2-x1);
+x = RIGHT;
+}
+else if (rcode & 0x4)
+{
+x = x1+(x2-x1)*(BOTTOM-y1)/(y2-y1);
+y = BOTTOM;
+}
+else if (rcode & 0x8)
+{
+x = x1+(x2-x1)*(TOP-y1)/(y2-y1);
+y = TOP;
+}
+ 
+if (rcode == rcode1)
+#include <windows.h>
+ 
+#include <math.h>
+ 
+// Autor programu:  Krzysztof Zaj¹czkowski
+ 
+/*  Declare Windows procedure  */
+LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
+ 
+/*  Make the class name into a global variable  */
+char szClassName[ ] = "CodeBlocksWindowsApp";
+ 
+int WINAPI WinMain (HINSTANCE hThisInstance,
+HINSTANCE hPrevInstance,
+LPSTR lpszArgument,
+int nCmdShow)
+{
+HWND hwnd;               /* This is the handle for our window */
+MSG messages;            /* Here messages to the application are saved */
+WNDCLASSEX wincl;        /* Data structure for the windowclass */
+ 
+/* The Window structure */
+wincl.hInstance = hThisInstance;
+wincl.lpszClassName = szClassName;
+wincl.lpfnWndProc = WindowProcedure;      /* This function is called by windows */
+wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
+wincl.cbSize = sizeof (WNDCLASSEX);
+ 
+/* Use default icon and mouse-pointer */
+wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
+wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
+wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
+wincl.lpszMenuName = NULL;                 /* No menu */
+wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
+wincl.cbWndExtra = 0;                      /* structure or the window instance */
+/* Use Windows's default colour as the background of the window */
+wincl.hbrBackground = CreateSolidBrush(RGB(0,0,0));
+ 
+/* Register the window class, and if it fails quit the program */
+if (!RegisterClassEx (&wincl))
+return 0;
+ 
+/* The class is registered, let's create the program*/
+hwnd = CreateWindowEx (
+0,                   /* Extended possibilites for variation */
+szClassName,         /* Classname */
+"Autor: Krzysztof Zaj¹czkowski",       /* Title Text */
+WS_OVERLAPPEDWINDOW, /* default window */
+CW_USEDEFAULT,       /* Windows decides the position */
+CW_USEDEFAULT,       /* where the window ends up on the screen */
+544,                 /* The programs width */
+375,                 /* and height in pixels */
+HWND_DESKTOP,        /* The window is a child-window to desktop */
+NULL,                /* No menu */
+hThisInstance,       /* Program Instance handler */
+NULL                 /* No Window Creation data */
+);
+ 
+/* Make the window visible on the screen */
+ShowWindow (hwnd, nCmdShow);
+ 
+/* Run the message loop. It will run until GetMessage() returns 0 */
+while (GetMessage (&messages, NULL, 0, 0))
+{
+/* Translate virtual-key messages into character messages */
+TranslateMessage(&messages);
+/* Send message to WindowProcedure */
+DispatchMessage(&messages);
+}
+ 
+/* The program return-value is 0 - The value that PostQuitMessage() gave */
+ 
+ 
+return messages.wParam;
+}
+ 
+ 
+/*  This function is called by the Windows function DispatchMessage()  */
+ 
+class dPoint{ // Klasa pomocnicza do przechowywania informacji o punktach
+public:
+double x;
+double y;
+ 
+dPoint();
+dPoint(double x,double y);
+ 
+operator POINT();
+dPoint operator -(dPoint dp2d);
+ 
+double Length();
+};
+ 
+dPoint::dPoint(){
+x = y = 0;
+}
+ 
+dPoint::dPoint(double x,double y){
+this->x = x;
+this->y = y;
+}
+ 
+dPoint::operator POINT(){
+POINT pt;
+pt.x = (long)x;
+pt.y = (long)y;
+ 
+return pt;
+}
+ 
+dPoint dPoint::operator -(dPoint dp2d){
+dPoint pt(x - dp2d.x,y - dp2d.y);
+return pt;
+}
+ 
+double dPoint::Length(){
+return pow(x*x+y*y,0.5);
+}
+ 
+dPoint p1(80,90); // Kolejne punkty okrêgu
+dPoint p2(40,50);
+dPoint p3(10,10);
+dPoint cp; // Zmienna przechowuj¹ca po³o¿enie œrodka okrêgu
+ 
+long ray = 0; // Zmienna przechowuj¹ca promieñ okrêgu
+ 
+dPoint CircleCenter(double x1,double y1,double x2,double y2,double x3,double y3){ // Funkcja licz¹ca po³o¿enie œrodka okrêgu
+dPoint dp;
+dp.x = 0.5 * ((x2 * x2 * y3 + y2 * y2 * y3 - x1 * x1 * y3 + x1 * x1 * y2 - y1 * y1 * y3 + y1 * y1 * y2 + y1 * x3 * x3 + y1 * y3 * y3 - y1 * x2 * x2 - y1 * y2 * y2 - y2 * x3 * x3 - y2 * y3 * y3) / (y1 * x3 - y1 * x2 - y2 * x3 - y3 * x1 + y3 * x2 + y2 * x1));
+dp.y = 0.5 * ((-x1 * x3 * x3 - x1 * y3 * y3 + x1 * x2 * x2 + x1 * y2 * y2 + x2 * x3 * x3 + x2 * y3 * y3 - x2 * x2 * x3 - y2 * y2 * x3 + x1 * x1 * x3 - x1 * x1 * x2 + y1 * y1 * x3 - y1 * y1 * x2) / (y1 * x3 - y1 * x2 - y2 * x3 - y3 * x1 + y3 * x2 + y2 * x1));
+return dp;
+}
+ 
+long Ray(dPoint pt,dPoint cp){ // funkcja licz¹ca promieñ okrêgu
+return (long)(pt - cp).Length();
+}
+ 
+LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+switch (message)                  /* handle the messages */
+{
+case WM_CREATE:
+{
+cp = CircleCenter(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y); // Obliczenie pocz¹tkowego po³o¿enia œrodka okrêgu
+ray = Ray(p1,cp); // obliczenie promienia okrêgu
+}
+break;
+case WM_LBUTTONDOWN:
+{
+// Operacje zwi¹zane z uzyskaniem po³o¿enia pierwszego punktu i obliczenia œrodka okrêgu oraz jego nowego promienia
+POINT pt;
+GetCursorPos(&pt);
+ScreenToClient(hwnd,&pt);
+ 
+p1.x = pt.x;
+p1.y = pt.y;
+ 
+cp = CircleCenter(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
+ray = Ray(p1,cp);
+ 
+InvalidateRect(hwnd,NULL,true);
+}
+break;
+case WM_RBUTTONDOWN:
+{
+// Operacje zwi¹zane z uzyskaniem po³o¿enia trzeciego punktu i obliczenia œrodka okrêgu oraz jego nowego promienia
+POINT pt;
+GetCursorPos(&pt);
+ScreenToClient(hwnd,&pt);
+ 
+p3.x = pt.x;
+p3.y = pt.y;
+ 
+cp = CircleCenter(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
+ray = Ray(p1,cp);
+ 
+InvalidateRect(hwnd,NULL,true);
+}
+break;
+case WM_MBUTTONDOWN:
+{
+// Operacje zwi¹zane z uzyskaniem po³o¿enia drugiego punktu i obliczenia œrodka okrêgu oraz jego nowego promienia
+POINT pt;
+GetCursorPos(&pt);
+ScreenToClient(hwnd,&pt);
+ 
+p2.x = pt.x;
+p2.y = pt.y;
+ 
+cp = CircleCenter(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
+ray = Ray(p1,cp);
+ 
+InvalidateRect(hwnd,NULL,true);
+}
+break;
+case WM_PAINT:
+{
+// Rysowanie okrêgu i punktów
+ 
+PAINTSTRUCT ps;
+HDC hdc = BeginPaint(hwnd,&ps);
+ 
+HBRUSH hb =  (HBRUSH)GetStockObject(NULL_BRUSH);
+HPEN hp = CreatePen(PS_SOLID,1,RGB(255,255,255));
+SelectObject(hdc,hp);
+SelectObject(hdc,hb);
+Ellipse(hdc,(long)(cp.x - ray),(long)(cp.y - ray),(long)(cp.x + ray),(long)(cp.y + ray));
+ 
+Ellipse(hdc,(long)(p1.x - 5),(long)(p1.y - 5),(long)(p1.x + 5),(long)(p1.y + 5));
+Ellipse(hdc,(long)(p2.x - 5),(long)(p2.y - 5),(long)(p2.x + 5),(long)(p2.y + 5));
+Ellipse(hdc,(long)(p3.x - 5),(long)(p3.y - 5),(long)(p3.x + 5),(long)(p3.y + 5));
+ 
+DeleteObject(hb);
+DeleteObject(hp);
+ 
+EndPaint(hwnd,&ps);
+}
+break;
+case WM_DESTROY:
+PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
+break;
+default:                      /* for messages that we don't deal with */
+return DefWindowProc (hwnd, message, wParam, lParam);
+}
+ 
+return 0;
+}
