@@ -1,5 +1,5 @@
 #include<iostream>
-#include<cstring>
+inpg inpg
 using namespace std;
  
 bool czy_spolgloska(char litera)
